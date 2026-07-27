@@ -1,7 +1,12 @@
-*/*.tar
-*/*.gz
-*/*.part
-*/pkg
-*/src
-*/*.pkg.*
-.SRCINFO
+# Anything inside a package directory is a build artefact or a downloaded source
+# unless listed below. An allowlist is used because the previous blocklist had to
+# enumerate every possible source extension and silently leaked whatever it
+# missed, such as downloaded AppImages.
+packages/*/*
+!packages/*/PKGBUILD
+!packages/*/*.install
+!packages/*/*.patch
+!packages/*/*.desktop
+!packages/*/*.hook
+!packages/*/*.sysusers
+!packages/*/*.tmpfiles
