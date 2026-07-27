@@ -1,0 +1,113 @@
+min_version = "2025.1.0"
+
+[env]
+AUR_MAINTAINER = "Zadkiel AHARONIAN <hello@zadkiel.fr>"
+
+[tools]
+fzf = "latest"
+bat = "latest"
+eza = "latest"
+jq = "latest"
+shellcheck = "latest"
+shfmt = "latest"
+
+# makepkg and namcap come from pacman, not from mise, which manages developer
+# tools rather than system packages. Tasks that need them depend on check:deps.
+[tasks."check:deps"]
+description = "Verify system dependencies are installed"
+run = '''
+missing=()
+for c in makepkg namcap; do
+    command -v "$c" >/dev/null || missing+=("$c")
+done
+if ((${#missing[@]})); then
+    echo "missing: ${missing[*]}" >&2
+    echo "install with: sudo pacman -S --needed base-devel namcap" >&2
+    exit 1
+fi
+'''
+
+[tasks."pkg:list"]
+description = "List packages in this repository"
+run = "eza -D packages | sed 's|packages/||'"
+
+[tasks."pkg:new"]
+description = "Scaffold a new package from a PKGBUILD skeleton"
+usage = '''
+arg "<pkg>" help="Package name"
+'''
+run = 'scripts/new-package.sh "${usage_pkg?}"'
+
+[tasks."pkg:adopt"]
+description = "Clone an existing AUR package and take over as maintainer"
+usage = '''
+arg "<pkg>" help="Existing AUR package name"
+'''
+run = '''
+set -euo pipefail
+dir="packages/${usage_pkg?}"
+git clone "ssh://aur@aur.archlinux.org/${usage_pkg?}.git" "$dir"
+rm -rf "$dir/.git" "$dir/.SRCINFO"
+sed -i "s/# Maintainer/# Contributor/g" "$dir/PKGBUILD"
+sed -i "1i# Maintainer: $AUR_MAINTAINER" "$dir/PKGBUILD"
+echo "adopted into $dir"
+'''
+
+[tasks."pkg:refresh"]
+description = "Recompute checksum arrays for a package"
+usage = '''
+arg "<pkg>" help="Package directory name under packages/"
+flag "--reset-pkgrel" help="Also reset pkgrel to 1"
+'''
+run = '''
+scripts/refresh-sums.sh \
+    ${usage_reset_pkgrel:+--reset-pkgrel} \
+    "packages/${usage_pkg?}"
+'''
+
+[tasks."pkg:bump"]
+description = "Set a package to a new version and refresh its checksums"
+usage = '''
+arg "<pkg>" help="Package directory name under packages/"
+arg "<version>" help="New pkgver"
+'''
+run = '''
+set -euo pipefail
+dir="packages/${usage_pkg?}"
+sed -i "s/^pkgver=[^ ]*/pkgver=${usage_version?}/" "$dir/PKGBUILD"
+scripts/refresh-sums.sh --reset-pkgrel "$dir"
+git --no-pager diff -- "$dir/PKGBUILD"
+'''
+
+[tasks."pkg:build"]
+description = "Build a package locally in a clean tree and run namcap"
+depends = ["check:deps"]
+usage = '''
+arg "<pkg>" help="Package directory name under packages/"
+'''
+run = '''
+set -euo pipefail
+dir="packages/${usage_pkg?}"
+(cd "$dir" && makepkg --force --cleanbuild --syncdeps --noconfirm)
+namcap "$dir"/*.pkg.tar.*
+'''
+
+[tasks."pkg:drop"]
+description = "Remove a package from this repository"
+usage = '''
+arg "<pkg>" help="Package directory name under packages/"
+'''
+run = '''
+set -euo pipefail
+git rm -r "packages/${usage_pkg?}"
+echo "removed. Disowning on the AUR itself is a separate manual step."
+'''
+
+[tasks.lint]
+description = "Lint the helper scripts and validate task definitions"
+run = '''
+set -euo pipefail
+shellcheck scripts/*.sh
+shfmt -d -i 4 scripts/*.sh
+mise tasks validate
+'''
