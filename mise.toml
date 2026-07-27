@@ -1,4 +1,4 @@
-min_version = "2025.1.0"
+min_version = "2026.7.0"
 
 [env]
 AUR_MAINTAINER = "Zadkiel AHARONIAN <hello@zadkiel.fr>"
