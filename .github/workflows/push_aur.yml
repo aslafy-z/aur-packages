@@ -10,7 +10,7 @@ jobs:
   generate-matrix:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Generate matrix
         id: gen-matrix
         run: echo "packages=$(ls */ -d | cut -f1 -d'/' | jq -R . | jq -cs .)" >> "$GITHUB_OUTPUT"
@@ -26,27 +26,19 @@ jobs:
         pkgname: ${{ fromJson(needs.generate-matrix.outputs.packages) }}
 
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
 
+      # Builds and namcap-validates the package, then copies only PKGBUILD and the
+      # regenerated .SRCINFO back into the workspace. The built package itself stays
+      # in the action's container, so there is nothing to upload or clean up here.
       - name: Build and check package
-        uses: heyhusen/archlinux-package-action@v3.0.1
+        uses: heyhusen/archlinux-package-action@3f7aaada28c782497bfe02d6d6ea365b25fdea12 # v3.0.1
         with:
           path: ${{ matrix.pkgname }}
           namcap: true
           srcinfo: true
-
-      - uses: actions/upload-artifact@v7
-        with:
-          name: ${{ matrix.pkgname }}-${{ github.run_id }}
-          path: ${{ matrix.pkgname }}/*.pkg.tar*
-
-      # asset_dir mirrors the whole package directory into the AUR repository and
-      # only honours a .gitignore inside that directory, not the one at the
-      # repository root. Without this the build output would be pushed to the AUR.
-      - name: Drop build output before publishing
-        run: sudo rm -rf "${{ matrix.pkgname }}"/{pkg,src} "${{ matrix.pkgname }}"/*.pkg.tar*
 
       - name: Read package commit message
         id: message
@@ -58,7 +50,7 @@ jobs:
           } >> "$GITHUB_OUTPUT"
 
       - name: Publish to AUR
-        uses: KSXGitHub/github-actions-deploy-aur@v4.2.0
+        uses: KSXGitHub/github-actions-deploy-aur@084b0d9b15415bf9cdb65d44dad1efe37a354050 # v4.2.0
         with:
           pkgname: ${{ matrix.pkgname }}
           asset_dir: ${{ matrix.pkgname }}
