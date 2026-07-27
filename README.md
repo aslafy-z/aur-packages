@@ -75,7 +75,7 @@ Renovate app permits only an undocumented set of commands that will not include
 a repository-local script.
 
 Two secrets are required, from a GitHub App installed on this repository:
-`RENOVATE_APP_ID` and `RENOVATE_APP_PRIVATE_KEY`. A GitHub App token is used
-rather than `GITHUB_TOKEN` because pull requests opened with `GITHUB_TOKEN` do
-not trigger other workflows, which would leave upgrade pull requests with no
-build or `namcap` checks.
+`RENOVATE_APP_CLIENT_ID` and `RENOVATE_APP_PRIVATE_KEY`. A GitHub App token is
+used rather than `GITHUB_TOKEN` because pull requests opened with
+`GITHUB_TOKEN` do not trigger other workflows, which would leave upgrade pull
+requests with no build or `namcap` checks.
