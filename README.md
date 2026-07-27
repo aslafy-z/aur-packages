@@ -9,12 +9,7 @@ Personal AUR packages, managed in a GitHub repository.
   every architecture already recomputed in the same commit.
 - `.SRCINFO` is generated in CI and is not tracked here.
 
-## Packages
-
-| Package | Version | Upstream | AUR |
-| --- | --- | --- | --- |
-| [`flite-voices-extra`](packages/flite-voices-extra) | 2.2 | [festvox/flite](https://github.com/festvox/flite) | [aur](https://aur.archlinux.org/packages/flite-voices-extra) |
-| [`kftray-appimage`](packages/kftray-appimage) | 0.27.30 | [hcavarsan/kftray](https://github.com/hcavarsan/kftray) | [aur](https://aur.archlinux.org/packages/kftray-appimage) |
+Packages live in `packages/`. Run `mise run pkg:list` to see them.
 
 ## Requirements
 
