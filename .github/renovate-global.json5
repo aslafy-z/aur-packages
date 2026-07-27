@@ -1,0 +1,20 @@
+// Self-hosted Renovate options. These are global-only: Renovate ignores them if
+// they appear in the repository's renovate.json, so they cannot live there.
+{
+  platform: "github",
+  autodiscover: false,
+  repositories: ["aslafy-z/aur-packages"],
+
+  // The repository already has a renovate.json, so no onboarding PR is wanted.
+  onboarding: false,
+  requireConfig: "required",
+
+  // postUpgradeTasks are blocked unless the command matches one of these
+  // patterns. The patterns are NOT auto-anchored, hence ^...$. This is the only
+  // reason Renovate runs self-hosted rather than on the Mend app: the hosted app
+  // permits only an undocumented, changeable set of commands, which will not
+  // include a repository-local script.
+  allowedCommands: [
+    "^bash scripts/refresh-sums\\.sh --reset-pkgrel packages/[a-zA-Z0-9._-]+$",
+  ],
+}

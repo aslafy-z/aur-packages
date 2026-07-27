@@ -1,0 +1,41 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended"],
+  "semanticCommits": "disabled",
+  "customManagers": [
+    {
+      "customType": "regex",
+      "managerFilePatterns": ["/(^|/)PKGBUILD$/"],
+      "matchStrings": [
+        "pkgver=(?<currentValue>\\S+)[ \\t]*#[ \\t]*renovate:[ \\t]*datasource=(?<datasource>\\S+)[ \\t]+depName=(?<depName>\\S+)(?:[ \\t]+packageName=(?<packageName>\\S+))?(?:[ \\t]+versioning=(?<versioning>\\S+))?"
+      ],
+      "versioningTemplate": "{{#if versioning}}{{{versioning}}}{{else}}loose{{/if}}"
+    }
+  ],
+  "customDatasources": {
+    "archlinux": {
+      "defaultRegistryUrlTemplate": "https://archlinux.org/packages/extra/x86_64/{{packageName}}/json/",
+      "format": "json",
+      "transformTemplates": [
+        "{\"releases\":[{\"version\": pkgver, \"releaseTimestamp\": last_update, \"sourceUrl\": url}], \"homepage\": url, \"sourceUrl\": url}"
+      ]
+    }
+  },
+  "postUpgradeTasks": {
+    "commands": [
+      "bash scripts/refresh-sums.sh --reset-pkgrel {{{packageFileDir}}}"
+    ],
+    "fileFilters": ["packages/*/PKGBUILD"],
+    "executionMode": "update"
+  },
+  "packageRules": [
+    {
+      "description": "Reproduce the '<pkgname>: update to <version>' convention, which the AUR publish step reuses verbatim as the AUR commit message. The version sits in commitMessageTopic because the components are joined prefix-action-topic-extra and commitMessage itself is deprecated.",
+      "matchManagers": ["custom.regex"],
+      "commitMessagePrefix": "{{{parentDir}}}:",
+      "commitMessageAction": "update",
+      "commitMessageTopic": "to {{{newVersion}}}",
+      "commitMessageExtra": ""
+    }
+  ]
+}
