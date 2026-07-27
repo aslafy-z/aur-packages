@@ -16,10 +16,6 @@ Personal AUR packages, managed in a GitHub repository.
 | [`flite-voices-extra`](packages/flite-voices-extra) | 2.2 | [festvox/flite](https://github.com/festvox/flite) | [aur](https://aur.archlinux.org/packages/flite-voices-extra) |
 | [`kftray-appimage`](packages/kftray-appimage) | 0.27.30 | [hcavarsan/kftray](https://github.com/hcavarsan/kftray) | [aur](https://aur.archlinux.org/packages/kftray-appimage) |
 
-`flite-voices-extra` deliberately tracks the `flite` package in Arch's `extra`
-repository rather than upstream festvox releases: it compiles the same source
-tree and its libraries must load against whatever `libflite` Arch ships.
-
 ## Requirements
 
 [mise](https://mise.jdx.dev) provides the tooling. `makepkg` and `namcap` come
