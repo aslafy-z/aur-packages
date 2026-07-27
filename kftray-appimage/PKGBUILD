@@ -1,4 +1,4 @@
-# Maintainer: Zadkiel <hello@zadkiel.fr>
+# Maintainer: Zadkiel AHARONIAN <hello@zadkiel.fr>
 # Repository: https://github.com/aslafy-z/aur-packages
 
 pkgname=kftray-appimage
@@ -19,10 +19,6 @@ sha256sums_aarch64=('3df5ad669acbffe428a4d92d378aa209218fe01aedd9ada8b5a8b95e5be
 prepare() {
     chmod u+x "${srcdir}/kftray.AppImage"
     ./kftray.AppImage --appimage-extract > /dev/null
-}
-
-build() {
-    sed -i "s/^Exec=AppRun$/Exec=${pkgname}/" "${srcdir}/squashfs-root/kftray.desktop"
 }
 
 package() {
