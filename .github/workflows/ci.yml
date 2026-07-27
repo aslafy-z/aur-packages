@@ -1,7 +1,9 @@
-name: "Update AUR"
+name: CI
 
 on:
+  pull_request:
   push:
+    branches: [main]
   workflow_dispatch:
   schedule:
     - cron: "0 0 * * 6"
@@ -42,6 +44,7 @@ jobs:
 
       - name: Read package commit message
         id: message
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
         run: |
           {
             echo "text<<PKGMSG_EOF"
@@ -49,7 +52,11 @@ jobs:
             echo "PKGMSG_EOF"
           } >> "$GITHUB_OUTPUT"
 
+      # Publishing is restricted to the default branch. Without this guard every
+      # push to any branch, including bot-authored upgrade branches, would ship
+      # straight to the AUR without review.
       - name: Publish to AUR
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
         uses: KSXGitHub/github-actions-deploy-aur@084b0d9b15415bf9cdb65d44dad1efe37a354050 # v4.2.0
         with:
           pkgname: ${{ matrix.pkgname }}
