@@ -88,7 +88,3 @@ Two secrets are required, from a GitHub App installed on this repository:
 rather than `GITHUB_TOKEN` because pull requests opened with `GITHUB_TOKEN` do
 not trigger other workflows, which would leave upgrade pull requests with no
 build or `namcap` checks.
-
-## Template
-
-This repository is based on [ouuan/AUR-template](https://github.com/ouuan/AUR-template).
