@@ -1,4 +1,4 @@
-# AUR-packages
+# AUR packages
 
 Personal AUR packages, managed in a GitHub repository.
 

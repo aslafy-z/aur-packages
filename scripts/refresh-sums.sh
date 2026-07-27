@@ -3,10 +3,9 @@
 #
 # This replaces updpkgsums, which downloads each source to its `name::` target.
 # Packages whose per-architecture sources rename to the same local filename
-# (kftray-appimage renames both to kftray.AppImage) therefore get one download
-# and one hash copied into every sha256sums_* array, silently corrupting every
-# architecture but the first. Here each source is fetched to a slot-unique path
-# instead, so no collision is possible.
+# therefore get one download and one hash copied into every sha256sums_* array,
+# silently corrupting every architecture but the first.
+# Here each source is fetched to a slot-unique path instead, so no collision is possible.
 #
 # Runs in three places: an operator's shell, a mise task, and the Renovate
 # container. It must therefore take plain arguments, read no mise-injected
