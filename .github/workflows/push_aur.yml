@@ -2,6 +2,7 @@ name: "Update AUR"
 
 on:
   push:
+  workflow_dispatch:
   schedule:
     - cron: "0 0 * * 6"
 
