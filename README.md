@@ -2,9 +2,11 @@
 
 Personal AUR packages, managed in a GitHub repository.
 
-- Packages are built and validated with `namcap` in a clean container on every
-  pull request, on every push to `main`, and weekly.
-- Pushes to `main` publish to the AUR. Nothing else does.
+- Pull requests and pushes to `main` build and `namcap`-validate only the
+  packages they touch, in a clean container. A change to the CI workflow or to
+  `scripts/` builds every package instead, as do the weekly and manual runs.
+- Anything running on `main` publishes to the AUR; pull requests never do. The
+  weekly run is therefore also what retries a publish that failed.
 - Renovate opens pull requests for new upstream versions, with checksums for
   every architecture already recomputed in the same commit.
 - `.SRCINFO` is generated in CI and is not tracked here.
