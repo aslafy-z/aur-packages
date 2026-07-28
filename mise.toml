@@ -20,7 +20,9 @@ missing=()
 for c in makepkg namcap; do
     command -v "$c" >/dev/null || missing+=("$c")
 done
-if ((${#missing[@]})); then
+# Not an array length expansion: it opens with a brace followed by a hash, which
+# mise renders as an unterminated Tera comment and then refuses to run the task.
+if [[ -n "${missing[*]}" ]]; then
     echo "missing: ${missing[*]}" >&2
     echo "install with: sudo pacman -S --needed base-devel namcap" >&2
     exit 1
@@ -89,7 +91,11 @@ run = '''
 set -euo pipefail
 dir="packages/${usage_pkg?}"
 (cd "$dir" && makepkg --force --cleanbuild --syncdeps --noconfirm)
-namcap "$dir"/*.pkg.tar.*
+# Asking makepkg for the artefact names rather than globbing for them: the
+# compression suffix comes from PKGEXT in the local makepkg.conf, and split
+# packages the build did not produce must not be passed to namcap either.
+mapfile -t built < <(cd "$dir" && makepkg --packagelist)
+namcap "${built[@]}"
 '''
 
 [tasks."pkg:drop"]
