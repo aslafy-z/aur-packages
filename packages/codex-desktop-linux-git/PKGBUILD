@@ -6,7 +6,7 @@
 # so this package stays outside the repository's upgrade automation and users
 # pick up port fixes by rebuilding.
 pkgname=codex-desktop-linux-git
-pkgver=26.721.81911.r1788.g586c20e8
+pkgver=26.721.81911.r1790.gdc479a4c
 pkgrel=1
 pkgdesc='Unofficial ChatGPT desktop app for Linux, converted from the official macOS build'
 arch=('x86_64')
@@ -95,6 +95,13 @@ build() {
     # Electron and the managed Node runtime arrive prebuilt. makepkg's default
     # flags do not match their ABI and break the native module rebuild.
     unset CFLAGS CXXFLAGS LDFLAGS
+
+    # install.sh writes a job summary and run metadata into the DMG acceptance
+    # report whenever it finds these set. Under a container build action the
+    # runner's summary file is present in the environment but owned by another
+    # user, so the write fails with EACCES and takes the build down with it.
+    unset GITHUB_STEP_SUMMARY GITHUB_RUN_ID GITHUB_RUN_ATTEMPT \
+        GITHUB_SERVER_URL GITHUB_REPOSITORY
 
     # The installer fetches the macOS payload, an Electron runtime, a managed
     # Node runtime and npm modules. Its caches default to the caller's home, so
