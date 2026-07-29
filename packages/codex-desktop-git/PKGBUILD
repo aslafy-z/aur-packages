@@ -12,7 +12,7 @@
 pkgname=codex-desktop-git
 pkgver=26.721.81911 # renovate: datasource=custom.codex-desktop-app depName=codex-desktop
 pkgrel=1
-pkgdesc='Unofficial ChatGPT desktop app for Linux, converted from the official macOS build'
+pkgdesc='Unofficial ChatGPT desktop with built-in browser (ilysenko/codex-desktop-linux)'
 arch=('x86_64')
 url='https://github.com/ilysenko/codex-desktop-linux'
 # MIT covers the Linux port. The macOS app it converts during build() remains
