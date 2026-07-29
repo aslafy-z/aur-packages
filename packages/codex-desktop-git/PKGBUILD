@@ -25,9 +25,10 @@ depends=(
     'xdg-utils'
     'hicolor-icon-theme'
     # Electron runtime libraries. Upstream's packaging/linux/PKGBUILD.template
-    # also lists atk, which Arch merged into at-spi2-core, and omits the direct
-    # links namcap reports against opt/codex-desktop/electron and the rebuilt
-    # native modules: expat, systemd-libs, gcc-libs and glibc.
+    # names atk, which still resolves because at-spi2-core provides it, but
+    # at-spi2-core is the package that actually exists. The template also omits
+    # the direct links namcap reports against opt/codex-desktop/electron and the
+    # rebuilt native modules: expat, systemd-libs, gcc-libs and glibc.
     'alsa-lib'
     'at-spi2-core'
     'cairo'
@@ -58,8 +59,10 @@ makedepends=(
     'python'
     'curl'
     'unzip'
-    # 7zip, not p7zip: upstream's check_deps rejects p7zip outright because it
-    # cannot read the APFS DMG the payload ships in.
+    # Upstream's template names p7zip here. Either resolves, since 7zip both
+    # provides and replaces it, but 7zip is the package that actually exists.
+    # The installer does refuse genuinely old p7zip builds, which cannot read
+    # the APFS DMG, and those are no longer installable on Arch anyway.
     '7zip'
     'nodejs'
     'npm'
