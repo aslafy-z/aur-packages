@@ -78,8 +78,10 @@ provides=('codex-desktop')
 conflicts=('codex-desktop' 'codex-desktop-linux')
 options=('!debug' '!strip')
 install="$pkgname.install"
-source=("$pkgname::git+https://github.com/ilysenko/codex-desktop-linux.git")
-sha256sums=('SKIP')
+source=("$pkgname::git+https://github.com/ilysenko/codex-desktop-linux.git"
+        'LicenseRef-OpenAI-Terms')
+sha256sums=('SKIP'
+            '7abd10bce8b40b17ff0902c0fa0750fcea831fd5afe67f8b4c02e4aeb8505ed3')
 
 # The conversion runs in prepare() rather than build() so that pkgver() can read
 # the version out of its result: makepkg runs prepare() before pkgver(), and
@@ -171,25 +173,7 @@ package() {
 
     # Every non-common licence identifier needs a file under
     # /usr/share/licenses. OpenAI publishes no redistributable licence text to
-    # ship for theirs, so the identifier is backed by a notice written here
-    # rather than by a file carried in this repository.
-    install -d -m755 "$pkgdir/usr/share/licenses/$pkgname"
-    cat > "$pkgdir/usr/share/licenses/$pkgname/LicenseRef-OpenAI-Terms" <<'NOTICE'
-The Linux port that this package builds is MIT licensed; see the LICENSE file
-installed alongside this notice.
-
-The ChatGPT desktop application the port converts is OpenAI's and is not
-redistributed by this package. build() downloads it from OpenAI's content
-delivery network onto the machine performing the build, and the resulting
-binary package is not intended for redistribution.
-
-Use of the application itself is governed by OpenAI's terms:
-
-    https://openai.com/policies/terms-of-use/
-    https://openai.com/policies/service-terms/
-
-This is an unofficial community port. It is not affiliated with, authorised by,
-or endorsed by OpenAI.
-NOTICE
-    chmod 0644 "$pkgdir/usr/share/licenses/$pkgname/LicenseRef-OpenAI-Terms"
+    # ship for theirs, so the identifier is backed by this notice.
+    install -Dm644 "$srcdir/LicenseRef-OpenAI-Terms" \
+        "$pkgdir/usr/share/licenses/$pkgname/LicenseRef-OpenAI-Terms"
 }
