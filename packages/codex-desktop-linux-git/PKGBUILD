@@ -1,0 +1,147 @@
+# Maintainer: Zadkiel AHARONIAN <hello@zadkiel.fr>
+# Repository: https://github.com/aslafy-z/aur-packages
+
+# A VCS package because upstream publishes neither releases nor tags: it is a
+# rolling main branch. There is no `# renovate:` annotation for the same reason,
+# so this package stays outside the repository's upgrade automation and users
+# pick up port fixes by rebuilding.
+pkgname=codex-desktop-linux-git
+pkgver=26.721.81911.r1788.g586c20e8
+pkgrel=1
+pkgdesc='Unofficial ChatGPT desktop app for Linux, converted from the official macOS build'
+arch=('x86_64')
+url='https://github.com/ilysenko/codex-desktop-linux'
+# MIT covers the Linux port. The macOS app it converts during build() remains
+# OpenAI's, is fetched from their CDN rather than redistributed here, and is not
+# covered by that MIT grant.
+license=('MIT' 'LicenseRef-OpenAI-Terms')
+depends=(
+    'bash'
+    'python'
+    'xdg-utils'
+    'hicolor-icon-theme'
+    # Electron runtime libraries. Upstream's packaging/linux/PKGBUILD.template
+    # also lists atk, which Arch merged into at-spi2-core, and omits the direct
+    # links namcap reports against opt/codex-desktop/electron and the rebuilt
+    # native modules: expat, systemd-libs, gcc-libs and glibc.
+    'alsa-lib'
+    'at-spi2-core'
+    'cairo'
+    'dbus'
+    'expat'
+    'gcc-libs'
+    'glib2'
+    'glibc'
+    'gtk3'
+    'libcups'
+    'libdrm'
+    'libx11'
+    'libxcb'
+    'libxcomposite'
+    'libxdamage'
+    'libxext'
+    'libxfixes'
+    'libxkbcommon'
+    'libxrandr'
+    'mesa'
+    'nspr'
+    'nss'
+    'pango'
+    'systemd-libs'
+)
+makedepends=(
+    'git'
+    'python'
+    'curl'
+    'unzip'
+    # 7zip, not p7zip: upstream's check_deps rejects p7zip outright because it
+    # cannot read the APFS DMG the payload ships in.
+    '7zip'
+    'nodejs'
+    'npm'
+)
+optdepends=(
+    'nodejs: override the bundled managed Node.js runtime'
+    'npm: Codex CLI install and update flows'
+    'zenity: GTK dialog fallback when the Codex CLI is missing'
+    'kdialog: KDE dialog fallback when the Codex CLI is missing'
+)
+# The app installs under upstream's own identity: /opt/codex-desktop, the
+# Electron WM_CLASS, and the ~/.config/codex-desktop settings directory. The
+# unsuffixed AUR name is a separate soft-fork package installing to the same paths.
+provides=('codex-desktop')
+conflicts=('codex-desktop' 'codex-desktop-linux')
+options=('!debug' '!strip')
+install="$pkgname.install"
+source=("$pkgname::git+https://github.com/ilysenko/codex-desktop-linux.git"
+        'LicenseRef-OpenAI-Terms')
+sha256sums=('SKIP'
+            '7abd10bce8b40b17ff0902c0fa0750fcea831fd5afe67f8b4c02e4aeb8505ed3')
+
+# The Codex app version is read from upstream's own pin rather than duplicated
+# here, so the reported version cannot drift from what the checkout builds.
+pkgver() {
+    cd "$pkgname"
+
+    printf '%s.r%s.g%s' \
+        "$(grep -oP 'codexVersion = "\K[^"]+' flake.nix)" \
+        "$(git rev-list --count HEAD)" \
+        "$(git rev-parse --short=8 HEAD)"
+}
+
+build() {
+    cd "$pkgname"
+
+    # Electron and the managed Node runtime arrive prebuilt. makepkg's default
+    # flags do not match their ABI and break the native module rebuild.
+    unset CFLAGS CXXFLAGS LDFLAGS
+
+    # The installer fetches the macOS payload, an Electron runtime, a managed
+    # Node runtime and npm modules. Its caches default to the caller's home, so
+    # redirect them into srcdir while still honouring a warm cache if set.
+    export CODEX_INSTALL_DIR="$srcdir/codex-app"
+    export CODEX_MANAGED_NODE_CACHE_DIR="${CODEX_MANAGED_NODE_CACHE_DIR:-$srcdir/cache/node-runtime}"
+    export CODEX_ELECTRON_CACHE_DIR="${CODEX_ELECTRON_CACHE_DIR:-$srcdir/cache/electron}"
+    export CODEX_BROWSER_USE_RUNTIME_CACHE_DIR="${CODEX_BROWSER_USE_RUNTIME_CACHE_DIR:-$srcdir/cache/browser-use}"
+    export MAX_BUILD_THREADS="$(nproc)"
+
+    ./install.sh
+}
+
+package() {
+    # Subshell: package-common.sh defines its own error(), which would otherwise
+    # shadow makepkg's for the rest of the build.
+    (
+        cd "$srcdir/$pkgname"
+
+        export REPO_DIR="$PWD"
+        export APP_DIR="$srcdir/codex-app"
+        export PACKAGE_NAME='codex-desktop'
+        export DESKTOP_TEMPLATE="$REPO_DIR/packaging/linux/codex-desktop.desktop"
+        # pacman owns updates here, so codex-update-manager, its systemd user
+        # service and its polkit action are all left out of the payload. That
+        # also drops the only Rust component, hence no rust in makedepends.
+        export PACKAGE_WITH_UPDATER=0
+
+        # Upstream's own staging library. scripts/build-pacman.sh cannot be
+        # called directly because it runs makepkg itself, but the PKGBUILD it
+        # renders does nothing beyond copying this staging tree into pkgdir.
+        . scripts/lib/package-common.sh
+        ICON_SOURCE="$(resolve_package_icon_source)"
+
+        stage_common_package_files "$pkgdir"
+        write_launcher_stub "$pkgdir"
+        stage_linux_feature_package_resources "$pkgdir" pacman
+        run_linux_feature_package_hooks "$pkgdir" pacman
+        normalize_package_payload_permissions "$pkgdir"
+        restore_linux_feature_payload_permissions "$pkgdir"
+        restore_linux_feature_package_resource_permissions "$pkgdir" pacman
+    )
+
+    install -Dm644 "$srcdir/$pkgname/LICENSE" \
+        "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+    # The payload is OpenAI's and carries no redistributable licence text, so
+    # the LicenseRef- identifier is backed by a notice rather than their terms.
+    install -Dm644 "$srcdir/LicenseRef-OpenAI-Terms" \
+        "$pkgdir/usr/share/licenses/$pkgname/LicenseRef-OpenAI-Terms"
+}
