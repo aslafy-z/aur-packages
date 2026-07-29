@@ -63,12 +63,21 @@ makedepends=(
     '7zip'
     'nodejs'
     'npm'
+    # The notification action bridge, the Chrome extension host and the Computer
+    # Use plugin are Rust, and the installer builds each of them only if it finds
+    # cargo, warning and carrying on when it does not. Leaving this out therefore
+    # does not fail the build, it silently ships a package whose contents depend
+    # on whether the build host happened to have Rust installed.
+    'cargo'
 )
 optdepends=(
     'nodejs: override the bundled managed Node.js runtime'
     'npm: Codex CLI install and update flows'
     'zenity: GTK dialog fallback when the Codex CLI is missing'
     'kdialog: KDE dialog fallback when the Codex CLI is missing'
+    'ydotool: synthetic keyboard and pointer input for Computer Use on Wayland'
+    'xdg-desktop-portal-wlr: screenshot and remote desktop portal for wlroots'
+    'xdg-desktop-portal-gnome: screenshot and remote desktop portal for GNOME'
 )
 # codex-desktop is upstream's own identity for the app: /opt/codex-desktop, the
 # Electron WM_CLASS, the ~/.config/codex-desktop settings directory, and the name
@@ -149,8 +158,7 @@ package() {
         export PACKAGE_NAME='codex-desktop'
         export DESKTOP_TEMPLATE="$REPO_DIR/packaging/linux/codex-desktop.desktop"
         # pacman owns updates here, so codex-update-manager, its systemd user
-        # service and its polkit action are all left out of the payload. That
-        # also drops the only Rust component, hence no rust in makedepends.
+        # service and its polkit action are all left out of the payload.
         export PACKAGE_WITH_UPDATER=0
 
         # Upstream's own staging library. scripts/build-pacman.sh cannot be
