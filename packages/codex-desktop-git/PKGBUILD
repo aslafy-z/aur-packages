@@ -2,13 +2,15 @@
 # Repository: https://github.com/aslafy-z/aur-packages
 
 # Built from a rolling main branch, since upstream publishes neither releases
-# nor tags. pkgver deliberately tracks the Codex app version rather than being
-# derived by a pkgver() function: a VCS pkgver only ever changes when someone
-# rebuilds, so installed copies are never told an update exists. Pinning it to
-# the app version means each Renovate bump publishes an AUR revision that
-# helpers actually surface to users.
-pkgname=codex-desktop-linux-git
-pkgver=26.721.81911 # renovate: datasource=custom.codex-app depName=codex-app
+# nor tags.
+#
+# pkgver carries the Codex app version on its own, and is the value Renovate
+# bumps. A pkgver() alone would not be enough: it only ever runs when somebody
+# rebuilds, so an installed copy is never told a newer app exists. Bumping this
+# line is what publishes an AUR revision that helpers surface to users, while
+# pkgver() below still stamps each build with what it actually produced.
+pkgname=codex-desktop-git
+pkgver=26.721.81911 # renovate: datasource=custom.codex-desktop-app depName=codex-desktop
 pkgrel=1
 pkgdesc='Unofficial ChatGPT desktop app for Linux, converted from the official macOS build'
 arch=('x86_64')
@@ -68,9 +70,10 @@ optdepends=(
     'zenity: GTK dialog fallback when the Codex CLI is missing'
     'kdialog: KDE dialog fallback when the Codex CLI is missing'
 )
-# The app installs under upstream's own identity: /opt/codex-desktop, the
-# Electron WM_CLASS, and the ~/.config/codex-desktop settings directory. The
-# unsuffixed AUR name is a separate soft-fork package installing to the same paths.
+# codex-desktop is upstream's own identity for the app: /opt/codex-desktop, the
+# Electron WM_CLASS, the ~/.config/codex-desktop settings directory, and the name
+# its deb, rpm and pacman packages all use. codex-desktop-linux is a separate AUR
+# package built from a soft-fork, and installs to the same paths.
 provides=('codex-desktop')
 conflicts=('codex-desktop' 'codex-desktop-linux')
 options=('!debug' '!strip')
@@ -78,7 +81,10 @@ install="$pkgname.install"
 source=("$pkgname::git+https://github.com/ilysenko/codex-desktop-linux.git")
 sha256sums=('SKIP')
 
-build() {
+# The conversion runs in prepare() rather than build() so that pkgver() can read
+# the version out of its result: makepkg runs prepare() before pkgver(), and
+# build() only after it.
+prepare() {
     cd "$pkgname"
 
     # Electron and the managed Node runtime arrive prebuilt. makepkg's default
@@ -102,6 +108,32 @@ build() {
     export MAX_BUILD_THREADS="$(nproc)"
 
     ./install.sh
+}
+
+# Reports the version of the app that was actually built, from the
+# CFBundleShortVersionString install.sh recorded for the payload it downloaded.
+#
+# Deliberately does not derive from $pkgver: makepkg rewrites the pkgver= line
+# with whatever this returns, so appending to the previous value would compound
+# the .rN.gSHA suffix on every rebuild. The pkgver= line above stays the Codex
+# app version alone, which is what Renovate bumps and what reaches users as an
+# AUR revision; makepkg's rewrite preserves its trailing annotation.
+pkgver() {
+    local _appver
+    _appver=$(python -c '
+import json, sys
+version = json.load(open(sys.argv[1]))["upstreamDmg"]["appVersion"]
+if not version:
+    raise SystemExit("build-info.json recorded no upstreamDmg.appVersion")
+print(version)
+' "$srcdir/codex-app/.codex-linux/build-info.json")
+
+    cd "$pkgname"
+
+    printf '%s.r%s.g%s' \
+        "$_appver" \
+        "$(git rev-list --count HEAD)" \
+        "$(git rev-parse --short=8 HEAD)"
 }
 
 package() {
