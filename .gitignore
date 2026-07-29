@@ -5,6 +5,9 @@
 packages/*/*
 !packages/*/PKGBUILD
 !packages/*/*.install
+# SPDX LicenseRef- identifiers need their licence text shipped from the package
+# directory, since by definition no /usr/share/licenses/common file covers them.
+!packages/*/LicenseRef-*
 !packages/*/*.patch
 !packages/*/*.desktop
 !packages/*/*.hook

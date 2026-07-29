@@ -19,6 +19,14 @@
       "transformTemplates": [
         "{\"releases\":[{\"version\": pkgver, \"releaseTimestamp\": last_update, \"sourceUrl\": url}], \"homepage\": url, \"sourceUrl\": url}"
       ]
+    },
+    "codex-desktop-app": {
+      "description": "Codex desktop app releases. OpenAI publishes only a Sparkle appcast, which is XML and so unreadable by a custom datasource; this community mirror restates the same feed as JSON. Only the version is taken from it, and the arm64 short version is the one to read: it is what the payload install.sh downloads reports as its CFBundleShortVersionString.",
+      "defaultRegistryUrlTemplate": "https://codexapp.agentsmirror.com/latest/manifest",
+      "format": "json",
+      "transformTemplates": [
+        "{\"releases\":[{\"version\": sources.macos.arm64.appcast.shortVersionString}], \"homepage\": \"https://github.com/ilysenko/codex-desktop-linux\"}"
+      ]
     }
   },
   "postUpgradeTasks": {
