@@ -29,14 +29,18 @@
       ]
     }
   },
-  "postUpgradeTasks": {
-    "commands": [
-      "bash scripts/refresh-sums.sh --reset-pkgrel {{{packageFileDir}}}"
-    ],
-    "fileFilters": ["packages/*/PKGBUILD"],
-    "executionMode": "update"
-  },
   "packageRules": [
+    {
+      "description": "Refresh checksums only for PKGBUILD updates; other managers must not trigger the script.",
+      "matchManagers": ["custom.regex"],
+      "postUpgradeTasks": {
+        "commands": [
+          "bash scripts/refresh-sums.sh --reset-pkgrel {{{packageFileDir}}}"
+        ],
+        "fileFilters": ["packages/*/PKGBUILD"],
+        "executionMode": "update"
+      }
+    },
     {
       "description": "Reproduce the '<pkgname>: update to <version>' convention, which the AUR publish step reuses verbatim as the AUR commit message. The version sits in commitMessageTopic because the components are joined prefix-action-topic-extra and commitMessage itself is deprecated.",
       "matchManagers": ["custom.regex"],
