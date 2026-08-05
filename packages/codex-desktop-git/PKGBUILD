@@ -10,7 +10,7 @@
 # line is what publishes an AUR revision that helpers surface to users, while
 # pkgver() below still stamps each build with what it actually produced.
 pkgname=codex-desktop-git
-pkgver=26.727.51351 # renovate: datasource=custom.codex-desktop-app depName=codex-desktop
+pkgver=26.730.61639 # renovate: datasource=custom.codex-desktop-app depName=codex-desktop
 pkgrel=1
 pkgdesc='Unofficial ChatGPT desktop with built-in browser (ilysenko/codex-desktop-linux)'
 arch=('x86_64')
