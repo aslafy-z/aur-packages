@@ -71,6 +71,10 @@ makedepends=(
     'dpkg'
     'gnupg'
     'nodejs'
+    # install.sh repacks app.asar to apply its enabled feature descriptors.
+    # Left alone it would npx-download @electron/asar at build time; prepare()
+    # points CODEX_ASAR_BIN at the packaged CLI instead.
+    'asar'
     # The transactional candidate promotion in install.sh runs
     # scripts/lib/candidate-promotion.py, and pkgver() reads build-info.json.
     'python'
@@ -107,6 +111,7 @@ prepare() {
     # install.sh fetches OpenAI's official Linux deb from their signed APT
     # repository, verifies it, and stages the patched app tree here.
     export CODEX_INSTALL_DIR="$srcdir/codex-app"
+    export CODEX_ASAR_BIN=/usr/bin/asar
 
     ./install.sh
 }
