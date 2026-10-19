@@ -10,6 +10,7 @@ url='https://github.com/aslafy-z/aur-packages'
 license=('GPL-3.0-only')
 options=('!strip')
 provides=(kftray)
+depends=('hicolor-icon-theme')
 conflicts=(kftray)
 source_x86_64=("kftray-${pkgver}.AppImage::https://github.com/hcavarsan/kftray/releases/download/v${pkgver}/kftray_${pkgver}_amd64.AppImage")
 source_aarch64=("kftray-${pkgver}.AppImage::https://github.com/hcavarsan/kftray/releases/download/v${pkgver}/kftray_${pkgver}_aarch64.AppImage")
